@@ -5,7 +5,14 @@ from sqlalchemy.exc import OperationalError
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+# Cargar el archivo .env según el entorno
+environment = os.getenv("ENVIRONMENT", "development")
+if environment == "development":
+    load_dotenv(".env.development")
+elif environment == "testing":
+    load_dotenv(".env.testing")
+elif environment == "production":
+    load_dotenv(".env.production")
 
 class Connection:
     SERVER_TYPE = os.getenv("SERVER_TYPE")
@@ -16,13 +23,10 @@ class Connection:
     SQL_PORT = os.getenv("PORTSQL")
     SQL_DB = os.getenv("DATABASE")
 
-
     SQLALCHEMY_DATABASE_URL = f"{SERVER_TYPE}+{LIBRARY_SERVER}://{SQL_USER}:{SQL_PASSWORD}@{SQL_SERVER}:{SQL_PORT}/{SQL_DB}"
     print(SQLALCHEMY_DATABASE_URL)
 
-
     engine = create_engine(SQLALCHEMY_DATABASE_URL)
-
 
     try:
         engine.connect()
@@ -30,25 +34,17 @@ class Connection:
         print("Conexión exitosa a la base de datos")
     except OperationalError as e:
         print(f"Error al conectar a la base de datos: {e}")
-    
 
     Base = declarative_base()
-
 
 class Connect:
 
     @staticmethod
-    def get_db ():
+    def get_db():
         db = Connection.sessionlocal()
         print("nueva conexion", db)
         try:
             yield db
-        finally: # finalizamos las conexiones
-
+        finally:
             print("cierra conexion")
             db.close()
-
-# SQLALCHEMY_DATABASE_URL = "postgresql://user:password@localhost/dbname"
-
-# engine = create_async_engine(SQLALCHEMY_DATABASE_URL, echo=True)
-
